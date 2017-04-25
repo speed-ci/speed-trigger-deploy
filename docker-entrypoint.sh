@@ -40,18 +40,18 @@ printmainstep "Déclenchement du déploiement du macro-service"
 printstep "Vérification des paramètres d'entrée"
 
 init_env
-env
 
 REPO_URL=$(git config --get remote.origin.url | sed 's/\.git//g' | sed 's/\/\/.*:.*@/\/\//g')
 GITLAB_URL=`echo $REPO_URL | grep -o 'https\?://[^/]\+/'`
 GITLAB_API_URL="$GITLAB_URL/api/v4"
 PROJECT_NAME=${REPO_URL##*/}
 PROJECT_NAMESPACE=${PROJECT_NAME%-*}
-
-echo "PROJECT_NAME      : $PROJECT_NAME"
-echo "PROJECT_NAMESPACE : $PROJECT_NAMESPACE"
-
 PROJECT_DEPLOY_NAME="$PROJECT_NAMESPACE-deploy"
+
+echo "PROJECT_NAME        : $PROJECT_NAME"
+echo "PROJECT_NAMESPACE   : $PROJECT_NAMESPACE"
+echo "PROJECT_DEPLOY_NAME : $PROJECT_DEPLOY_NAME"
+
 PROJECT_DEPLOY_ID=`curl --silent --noproxy '*' --header "PRIVATE-TOKEN: $GITLAB_TOKEN" "$GITLAB_API_URL/projects?search=$PROJECT_DEPLOY_NAME" | jq .[0].id`
 
 if [[ $PROJECT_DEPLOY_ID != "null" ]];then
