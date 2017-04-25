@@ -55,7 +55,7 @@ PROJECT_DEPLOY_NAME="$PROJECT_NAMESPACE-deploy"
 PROJECT_DEPLOY_ID=`curl --noproxy '*' --header "PRIVATE-TOKEN: $GITLAB_TOKEN" "$GITLAB_API_URL/projects?search=$PROJECT_DEPLOY_NAME" | jq .[0].id`
 echo "PROJECT_DEPLOY_ID : $PROJECT_DEPLOY_ID"
 
-if [[ -n $PROJECT_DEPLOY_ID ]];then
+if [[ $PROJECT_DEPLOY_ID != "null ]];then
     printstep "Déclenchement du déploiement sur le projet $PROJECT_DEPLOY_NAME"
     curl --silent --noproxy '*' --request POST "$GITLAB_API_URL/projects/$PROJECT_DEPLOY_ID/trigger/pipeline?token=75a84c9680233ac890eef9e972b766&ref=master"
 else
