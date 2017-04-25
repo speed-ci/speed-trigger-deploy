@@ -52,7 +52,7 @@ echo "PROJECT_NAME      : $PROJECT_NAME"
 echo "PROJECT_NAMESPACE : $PROJECT_NAMESPACE"
 
 PROJECT_DEPLOY_NAME="$PROJECT_NAMESPACE-deploy"
-PROJECT_DEPLOY_ID=`curl -s --noproxy '*' --header "PRIVATE-TOKEN: $GITLAB_TOKEN" "$GITLAB_API_URL/projects?search=$PROJECT_DEPLOY_NAME" | jq .`
+PROJECT_DEPLOY_ID=`curl -s --noproxy '*' --header "PRIVATE-TOKEN: $GITLAB_TOKEN" "$GITLAB_API_URL/projects?search=$PROJECT_DEPLOY_NAME"`
 
 if [[ -n $PROJECT_DEPLOY_ID ]];then
     printstep "Déclenchement du déploiement sur le projet $PROJECT_DEPLOY_NAME"
