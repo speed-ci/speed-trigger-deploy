@@ -23,6 +23,13 @@ printerror () {
 }
 
 init_env () {
+    CONF_DIR=/conf/
+    if [ ! -d $CONF_DIR ]; then
+        printerror "Impossible de trouver le dossier de configuration $CONF_DIR sur le runner"
+        exit 1
+    else
+        source $CONF_DIR/variables
+    fi    
     if [[ -z $GITLAB_TOKEN ]];then
         printerror "La variable GITLAB_TOKEN n'est pas présente, sortie..."
         exit 1
