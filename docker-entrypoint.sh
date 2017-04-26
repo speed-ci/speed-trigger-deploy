@@ -66,12 +66,12 @@ if [[ $PROJECT_DEPLOY_ID != "null" ]]; then
     echo "PIPELINE_TOKEN : $PIPELINE_TOKEN"
     if [[ -z $PIPELINE_TOKEN ]]; then
         printinfo "Création du déclencheur manquant trigger_deploy"
-        PIPELINE_TOKEN=`curl --silent --noproxy '*' --request POST --header "PRIVATE-TOKEN: $GITLAB_TOKEN" --form description="trigger_deploy" "$GITLAB_API_URL/projects/13/triggers" | jq .token`
+        PIPELINE_TOKEN=`curl --silent --noproxy '*' --request POST --header "PRIVATE-TOKEN: $GITLAB_TOKEN" --form description="trigger_deploy" "$GITLAB_API_URL/projects/13/triggers" | jq .token | tr -d '"'`
         echo "PIPELINE_TOKEN : $PIPELINE_TOKEN"
     fi
 
     printstep "Déclenchement du déploiement sur le projet $PROJECT_DEPLOY_NAME"
-    REQUEST=`curl --silent --noproxy '*' -XPOST "$GITLAB_API_URL/projects/$PROJECT_DEPLOY_ID/trigger/pipeline" -d "token=$PIPELINE_TOKEN" -d "ref=master"`
+    curl --silent --noproxy '*' -XPOST "$GITLAB_API_URL/projects/$PROJECT_DEPLOY_ID/trigger/pipeline" -d "token=$PIPELINE_TOKEN" -d "ref=master"
 else
     printerror "Pas de déclenchement de déploiement possible, le projet $PROJECT_DEPLOY_NAME n'existe pas pour ce macroservice"
     exit 1
