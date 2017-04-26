@@ -35,7 +35,7 @@ init_env () {
         printerror "Impossible de trouver le dossier du code source de l'application $APP_DIR sur le runner"
         exit 1
     fi    
-    if [[ -z $GITLAB_TOKEN ]];then
+    if [[ -z $GITLAB_TOKEN ]]; then
         printerror "La variable GITLAB_TOKEN n'est pas présente, sortie..."
         exit 1
     fi
@@ -59,9 +59,18 @@ echo "PROJECT_DEPLOY_NAME : $PROJECT_DEPLOY_NAME"
 
 PROJECT_DEPLOY_ID=`curl --silent --noproxy '*' --header "PRIVATE-TOKEN: $GITLAB_TOKEN" "$GITLAB_API_URL/projects?search=$PROJECT_DEPLOY_NAME" | jq .[0].id`
 
-if [[ $PROJECT_DEPLOY_ID != "null" ]];then
+if [[ $PROJECT_DEPLOY_ID != "null" ]]; then
+
+    printstep "Préparation du déclencheur trigger_deploy sur le projet $PROJECT_DEPLOY_NAME"
+    TRIGGER_NAME="trigger_deploy"
+    PIPELINE_TOKEN=`curl --silent --noproxy '*' --header "PRIVATE-TOKEN: $GITLAB_TOKEN" "$GITLAB_API_URL/projects/$PROJECT_DEPLOY_ID/triggers" | jq '.[] | select(.description == $TRIGGER_NAME)' | jq .token`
+    if [[ -z $PIPELINE_TOKEN ]]; then
+        printinfo "Création du déclencheur manquant $TRIGGER_NAME"
+        PIPELINE_TOKEN=`curl --silent --noproxy '*' --request POST --header "PRIVATE-TOKEN: $GITLAB_TOKEN" --form description="$TRIGGER_NAME" "$GITLAB_API_URL/projects/13/triggers" | jq .token`
+    fi
+
     printstep "Déclenchement du déploiement sur le projet $PROJECT_DEPLOY_NAME"
-    curl --silent --noproxy '*' --request POST "$GITLAB_API_URL/projects/$PROJECT_DEPLOY_ID/trigger/pipeline?token=75a84c9680233ac890eef9e972b766&ref=master"
+    curl --silent --noproxy '*' --request POST "$GITLAB_API_URL/projects/$PROJECT_DEPLOY_ID/trigger/pipeline?token=$PIPELINE_TOKEN&ref=master"
 else
     printerror "Pas de déclenchement de déploiement possible, le projet $PROJECT_DEPLOY_NAME n'existe pas pour ce macroservice"
     exit 1
