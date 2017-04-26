@@ -41,7 +41,7 @@ init_env () {
     fi
 }
 
-printmainstep "Déclenchement du déploiement du macro-service"
+printmainstep "Déclenchement du déploiement du macroservice"
 printstep "Vérification des paramètres d'entrée"
 
 init_env
