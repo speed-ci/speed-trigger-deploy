@@ -71,7 +71,7 @@ if [[ $PROJECT_DEPLOY_ID != "null" ]]; then
     fi
 
     printstep "Déclenchement du déploiement sur le projet $PROJECT_DEPLOY_NAME"
-    REQUEST=`echo curl --silent --noproxy '*' --request POST "$GITLAB_API_URL/projects/$PROJECT_DEPLOY_ID/trigger/pipeline?token=$PIPELINE_TOKEN&ref=master"`
+    REQUEST=`echo curl --silent --noproxy '*' -XPOST "$GITLAB_API_URL/projects/$PROJECT_DEPLOY_ID/trigger/pipeline" -d "token=$PIPELINE_TOKEN" -d "ref=master"`
     echo $REQUEST
 else
     printerror "Pas de déclenchement de déploiement possible, le projet $PROJECT_DEPLOY_NAME n'existe pas pour ce macroservice"
