@@ -7,6 +7,7 @@ printmainstep "Déclenchement du déploiement du macroservice"
 printstep "Vérification des paramètres d'entrée"
 
 init_env
+int_gitlab_api_env
 
 PROJECT_DEPLOY_NAME="$PROJECT_NAMESPACE-deploy"
 
