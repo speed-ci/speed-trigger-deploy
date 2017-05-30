@@ -37,7 +37,7 @@ if [[ $PROJECT_DEPLOY_ID != "" ]]; then
     if [[ $DEPLOY_JOB_ID != "" ]]; then
         curl --silent --noproxy '*' --header "PRIVATE-TOKEN: $GITLAB_TOKEN" "$GITLAB_API_URL/projects/$PROJECT_DEPLOY_ID/jobs/$DEPLOY_JOB_ID/trace"
     else
-        printerror "Aucun job deploy disponible danss le projet $PROJECT_DEPLOY_NAME"
+        printerror "Aucun job dont le nom commence par deploy disponible dans le projet $PROJECT_DEPLOY_NAME"
         exit 1
     fi
 else
