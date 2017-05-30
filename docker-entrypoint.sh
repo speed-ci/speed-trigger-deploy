@@ -18,7 +18,7 @@ echo "PROJECT_DEPLOY_NAME : $PROJECT_DEPLOY_NAME"
 
 PROJECT_DEPLOY_ID=`curl --silent --noproxy '*' --header "PRIVATE-TOKEN: $GITLAB_TOKEN" "$GITLAB_API_URL/projects?search=$PROJECT_DEPLOY_NAME" | jq --arg project_namespace "$PROJECT_NAMESPACE" '.[] | select(.namespace.name == "\($project_namespace)")' | jq .id`
 
-if [[ $PROJECT_DEPLOY_ID != "null" ]]; then
+if [[ $PROJECT_DEPLOY_ID != "" ]]; then
 
     printstep "Préparation du déclencheur trigger_deploy sur le projet $PROJECT_DEPLOY_NAME"
     PIPELINE_TOKEN=`curl --silent --noproxy '*' --header "PRIVATE-TOKEN: $GITLAB_TOKEN" "$GITLAB_API_URL/projects/$PROJECT_DEPLOY_ID/triggers" | jq '.[] | select(.description == "trigger_deploy")' | jq .token | tr -d '"'`
