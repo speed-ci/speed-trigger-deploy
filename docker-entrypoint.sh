@@ -25,7 +25,7 @@ if [[ $PROJECT_DEPLOY_ID != "" ]]; then
 
     if [[ -z $PIPELINE_TOKEN ]]; then
         printinfo "Création du déclencheur manquant trigger_deploy"
-        PIPELINE_TOKEN=`curl --silent --noproxy '*' --request POST --header "PRIVATE-TOKEN: $GITLAB_TOKEN" --form description="trigger_deploy" "$GITLAB_API_URL/projects/13/triggers" | jq .token | tr -d '"'`
+        PIPELINE_TOKEN=`curl --silent --noproxy '*' --request POST --header "PRIVATE-TOKEN: $GITLAB_TOKEN" --form description="trigger_deploy" "$GITLAB_API_URL/projects/$PROJECT_DEPLOY_ID/triggers" | jq .token | tr -d '"'`
     fi
 
     printstep "Déclenchement du déploiement sur le projet $PROJECT_DEPLOY_NAME"
