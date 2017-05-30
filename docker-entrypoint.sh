@@ -16,7 +16,7 @@ echo "PROJECT_NAME        : $PROJECT_NAME"
 echo "PROJECT_NAMESPACE   : $PROJECT_NAMESPACE"
 echo "PROJECT_DEPLOY_NAME : $PROJECT_DEPLOY_NAME"
 
-PROJECT_DEPLOY_ID=`curl --silent --noproxy '*' --header "PRIVATE-TOKEN: $GITLAB_TOKEN" "$GITLAB_API_URL/projects?search=$PROJECT_DEPLOY_NAME" | jq .[0].id`
+PROJECT_DEPLOY_ID=`curl --silent --noproxy '*' --header "PRIVATE-TOKEN: $GITLAB_TOKEN" "$GITLAB_API_URL/projects?search=$PROJECT_DEPLOY_NAME" | jq --arg project_namespace "$PROJECT_NAMESPACE" '.[] | select(.namespace.name == "\($project_namespace)")'`
 
 if [[ $PROJECT_DEPLOY_ID != "null" ]]; then
 
