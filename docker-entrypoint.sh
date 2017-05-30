@@ -39,12 +39,12 @@ if [[ $PROJECT_DEPLOY_ID != "" ]]; then
         while :
         do
             JOB_STATUS=`curl --silent --noproxy '*' --header "PRIVATE-TOKEN: $GITLAB_TOKEN" "$GITLAB_API_URL/projects/$PROJECT_DEPLOY_ID/jobs/472" | jq .status`
-            if [[ $JOB_STATUS == "failed" ]] || [[ $JOB_STATUS == "success" ]]; then break;; fi
+            if [[ $JOB_STATUS == "failed" ]] || [[ $JOB_STATUS == "success" ]]; then break; fi
             sleep 5
         done
         curl --silent --noproxy '*' --header "PRIVATE-TOKEN: $GITLAB_TOKEN" "$GITLAB_API_URL/projects/$PROJECT_DEPLOY_ID/jobs/$DEPLOY_JOB_ID/trace"
-        if [[ $JOB_STATUS == "failed" ]]; then exit 1;; fi
-        if [[ $JOB_STATUS == "success" ]]; then exit 0;; fi
+        if [[ $JOB_STATUS == "failed" ]]; then exit 1; fi
+        if [[ $JOB_STATUS == "success" ]]; then exit 0; fi
 
     else
         printerror "Aucun job dont le nom commence par deploy disponible dans le projet $PROJECT_DEPLOY_NAME"
