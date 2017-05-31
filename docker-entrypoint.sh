@@ -38,8 +38,8 @@ if [[ $PROJECT_DEPLOY_ID != "" ]]; then
         
         while :
         do
-            JOB_STATUS=`curl --silent --noproxy '*' --header "PRIVATE-TOKEN: $GITLAB_TOKEN" "$GITLAB_API_URL/projects/$PROJECT_DEPLOY_ID/jobs/472" | jq .status | tr -d '"'`
-            if [[ $JOB_STATUS == "failed" ]] || [[ $JOB_STATUS == "success" ]]; then break; fi
+            JOB_STATUS=`curl --silent --noproxy '*' --header "PRIVATE-TOKEN: $GITLAB_TOKEN" "$GITLAB_API_URL/projects/$PROJECT_DEPLOY_ID/jobs/$DEPLOY_JOB_ID" | jq .status | tr -d '"'`
+            if [[ $JOB_STATUS != "pending" ]] || [[ $JOB_STATUS != "running" ]]; then break; fi
             sleep 5
         done
         
