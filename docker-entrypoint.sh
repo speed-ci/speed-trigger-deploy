@@ -48,6 +48,7 @@ if [[ $PROJECT_DEPLOY_ID != "" ]]; then
         printstep "Affichage des logs distants du job deploy du projet $PROJECT_DEPLOY_NAME"
         printinfo "Lien d'accès des logs distants d'origine : $GITLAB_URL/$PROJECT_NAMESPACE/$PROJECT_DEPLOY_NAME/builds/$DEPLOY_JOB_ID"
         sleep 5
+        echo ""
         curl --silent --noproxy '*' --header "PRIVATE-TOKEN: $GITLAB_TOKEN" "$GITLAB_API_URL/projects/$PROJECT_DEPLOY_ID/jobs/$DEPLOY_JOB_ID/trace"
         if [[ $JOB_STATUS != "success" ]]; then exit 1; fi
 
