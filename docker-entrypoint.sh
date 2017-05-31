@@ -42,7 +42,9 @@ if [[ $PROJECT_DEPLOY_ID != "" ]]; then
             if [[ $JOB_STATUS != "pending" ]] || [[ $JOB_STATUS != "running" ]]; then break; fi
             sleep 5
         done
-        
+
+        printinfo "Status final du job deploy du projet $PROJECT_DEPLOY_NAME : $JOB_STATUS"
+
         printstep "Affichage des logs distants du job deploy du projet $PROJECT_DEPLOY_NAME"
         printinfo "Lien d'accès des logs distants d'origine : $GITLAB_URL/$PROJECT_NAMESPACE/$PROJECT_DEPLOY_NAME/builds/$DEPLOY_JOB_ID"
         sleep 5
