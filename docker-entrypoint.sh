@@ -21,15 +21,15 @@ PROJECT_DEPLOY_ID=`curl --silent --noproxy '*' --header "PRIVATE-TOKEN: $GITLAB_
 
 if [[ $PROJECT_DEPLOY_ID != "" ]]; then
 
-    printstep "Préparation du projet $PROJECT_DEPLOY_NAME"
+    printstep "Préparation du projet $PROJECT_NAMESPACE/$PROJECT_DEPLOY_NAME"
     GITLAB_CI_USER_ID=`curl --silent --noproxy '*' --header "PRIVATE-TOKEN: $GITLAB_TOKEN" "$GITLAB_API_URL/users?username=$GITLAB_CI_USER" | jq .[0].id`
     GITLAB_CI_USER_MEMBERSHIP=`curl --silent --noproxy '*' --header "PRIVATE-TOKEN: $GITLAB_TOKEN" "$GITLAB_API_URL/projects/$PROJECT_DEPLOY_ID/members?query=$GITLAB_CI_USER" | jq .[0]`
     if [[ $GITLAB_CI_USER_MEMBERSHIP == "null" ]]; then 
-        printinfo "Ajout du user $GITLAB_CI_USER manquant au projet $PROJECT_DEPLOY_NAME"
+        printinfo "Ajout du user $GITLAB_CI_USER manquant au projet $PROJECT_NAMESPACE/$PROJECT_DEPLOY_NAME"
         curl --silent --noproxy '*' --request POST --header "PRIVATE-TOKEN: $GITLAB_TOKEN" "$GITLAB_API_URL/projects/$PROJECT_DEPLOY_ID/members" -d "user_id=$GITLAB_CI_USER_ID" -d "access_level=40"
     fi
     
-    printstep "Préparation du déclencheur trigger_deploy sur le projet $PROJECT_DEPLOY_NAME"
+    printstep "Préparation du déclencheur trigger_deploy sur le projet $PROJECT_NAMESPACE/$PROJECT_DEPLOY_NAME"
     PIPELINE_TOKEN=`curl --silent --noproxy '*' --header "PRIVATE-TOKEN: $GITLAB_TOKEN" "$GITLAB_API_URL/projects/$PROJECT_DEPLOY_ID/triggers" | jq '.[] | select(.description == "trigger_deploy")' | jq .token | tr -d '"'`
 
     if [[ -z $PIPELINE_TOKEN ]]; then
@@ -37,7 +37,7 @@ if [[ $PROJECT_DEPLOY_ID != "" ]]; then
         PIPELINE_TOKEN=`curl --silent --noproxy '*' --request POST --header "PRIVATE-TOKEN: $GITLAB_TOKEN" --form description="trigger_deploy" "$GITLAB_API_URL/projects/$PROJECT_DEPLOY_ID/triggers" | jq .token | tr -d '"'`
     fi
 
-    printstep "Déclenchement du déploiement sur le projet $PROJECT_DEPLOY_NAME"
+    printstep "Déclenchement du déploiement sur le projet $PROJECT_NAMESPACE/$PROJECT_DEPLOY_NAME"
     PIPELINE_ID=`curl --silent --noproxy '*' --header "PRIVATE-TOKEN: $GITLAB_TOKEN" -XPOST "$GITLAB_API_URL/projects/$PROJECT_DEPLOY_ID/trigger/pipeline" -d "token=$PIPELINE_TOKEN" -d "ref=$BRANCH_NAME" | jq .id `
     sleep 5
     
@@ -52,9 +52,9 @@ if [[ $PROJECT_DEPLOY_ID != "" ]]; then
             sleep 5
         done
 
-        printinfo "Status final du job deploy du projet $PROJECT_DEPLOY_NAME : $JOB_STATUS"
+        printinfo "Status final du job deploy du projet $PROJECT_NAMESPACE/$PROJECT_DEPLOY_NAME : $JOB_STATUS"
 
-        printstep "Affichage des logs distants du job deploy du projet $PROJECT_DEPLOY_NAME"
+        printstep "Affichage des logs distants du job deploy du projet $PROJECT_NAMESPACE/$PROJECT_DEPLOY_NAME"
         printinfo "Lien d'accès aux logs distants d'origine : $GITLAB_URL/$PROJECT_NAMESPACE/$PROJECT_DEPLOY_NAME/builds/$DEPLOY_JOB_ID"
         sleep 5
         echo ""
@@ -62,10 +62,10 @@ if [[ $PROJECT_DEPLOY_ID != "" ]]; then
         if [[ $JOB_STATUS != "success" ]]; then exit 1; fi
 
     else
-        printerror "Aucun job dont le nom commence par deploy disponible dans le projet $PROJECT_DEPLOY_NAME"
+        printerror "Aucun job dont le nom commence par deploy disponible dans le projet $PROJECT_NAMESPACE/$PROJECT_DEPLOY_NAME"
         exit 1
     fi
 else
-    printerror "Pas de déclenchement de déploiement possible, le projet $PROJECT_DEPLOY_NAME n'existe pas pour ce macroservice"
+    printerror "Pas de déclenchement de déploiement possible, le projet $PROJECT_NAMESPACE/$PROJECT_DEPLOY_NAME n'existe pas pour ce macroservice"
     exit 1
 fi
