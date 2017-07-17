@@ -16,6 +16,7 @@ GITLAB_CI_USER="gitlab-ci-sln"
 printinfo  "PROJECT_NAME        : $PROJECT_NAME"
 printinfo  "PROJECT_NAMESPACE   : $PROJECT_NAMESPACE"
 printinfo  "PROJECT_DEPLOY_NAME : $PROJECT_DEPLOY_NAME"
+printinfo  "GITLAB_USER_ID : $GITLAB_USER_ID"
 
 PROJECT_DEPLOY_ID=`curl --silent --noproxy '*' --header "PRIVATE-TOKEN: $GITLAB_TOKEN" "$GITLAB_API_URL/projects?search=$PROJECT_DEPLOY_NAME" | jq --arg project_namespace "$PROJECT_NAMESPACE" '.[] | select(.namespace.name == "\($project_namespace)")' | jq .id`
 
