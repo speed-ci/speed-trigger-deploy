@@ -34,7 +34,7 @@ if [[ $PROJECT_DEPLOY_ID != "" ]]; then
     if [[ -z $IMPERSONATION_TOKEN ]]; then
         printinfo "Création de l'impersonationtoken manquant trigger_jobs pour le user courant"
         IMPERSONATION_TOKEN=`curl --silent --noproxy '*' --header "PRIVATE-TOKEN: $GITLAB_TOKEN" "$GITLAB_API_URL/users/$GITLAB_USER_ID/impersonation_tokens" -d "name=trigger_jobs" -d "scopes[]=api" | jq .token | tr -d '"'`
-	fi    
+    fi    
     
     printstep "Préparation du déclencheur trigger_deploy sur le projet $PROJECT_NAMESPACE/$PROJECT_DEPLOY_NAME"
     curl --silent --noproxy '*' --header "PRIVATE-TOKEN: $IMPERSONATION_TOKEN" "$GITLAB_API_URL/projects/$PROJECT_DEPLOY_ID/triggers" | jq
