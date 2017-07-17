@@ -16,7 +16,6 @@ GITLAB_CI_USER="gitlab-ci-sln"
 printinfo  "PROJECT_NAME        : $PROJECT_NAME"
 printinfo  "PROJECT_NAMESPACE   : $PROJECT_NAMESPACE"
 printinfo  "PROJECT_DEPLOY_NAME : $PROJECT_DEPLOY_NAME"
-printinfo  "GITLAB_USER_ID : $GITLAB_USER_ID"
 
 PROJECT_DEPLOY_ID=`curl --silent --noproxy '*' --header "PRIVATE-TOKEN: $GITLAB_TOKEN" "$GITLAB_API_URL/projects?search=$PROJECT_DEPLOY_NAME" | jq --arg project_namespace "$PROJECT_NAMESPACE" '.[] | select(.namespace.name == "\($project_namespace)")' | jq .id`
 
@@ -30,16 +29,23 @@ if [[ $PROJECT_DEPLOY_ID != "" ]]; then
         curl --silent --noproxy '*' --request POST --header "PRIVATE-TOKEN: $GITLAB_TOKEN" "$GITLAB_API_URL/projects/$PROJECT_DEPLOY_ID/members" -d "user_id=$GITLAB_CI_USER_ID" -d "access_level=40"
     fi
     
-    printstep "Préparation du déclencheur trigger_deploy sur le projet $PROJECT_NAMESPACE/$PROJECT_DEPLOY_NAME"
-    PIPELINE_TOKEN=`curl --silent --noproxy '*' --header "PRIVATE-TOKEN: $GITLAB_TOKEN" "$GITLAB_API_URL/projects/$PROJECT_DEPLOY_ID/triggers" | jq '.[] | select(.description == "trigger_deploy")' | jq .token | tr -d '"'`
+	IMPERSONATION_TOKEN=`curl --silent --noproxy '*' --header "PRIVATE-TOKEN: $GITLAB_TOKEN" "$GITLAB_API_URL/users/$GITLAB_USER_ID/impersonation_tokens" | jq '.[] | select(.name == "trigger_jobs" and .active) | .token' | tr -d '"'`
 
+    if [[ -z $IMPERSONATION_TOKEN ]]; then
+        printinfo "Création de l'impersonationtoken manquant trigger_jobs pour le user courant"
+		IMPERSONATION_TOKEN=`curl --silent --noproxy '*' --header "PRIVATE-TOKEN: $GITLAB_TOKEN" "$GITLAB_API_URL/users/$GITLAB_USER_ID/impersonation_tokens" -d "name=trigger_jobs" -d "scopes[]=api" | jq .token | tr -d '"'`
+	fi    
+    
+    printstep "Préparation du déclencheur trigger_deploy sur le projet $PROJECT_NAMESPACE/$PROJECT_DEPLOY_NAME"
+    PIPELINE_TOKEN=`curl --silent --noproxy '*' --header "PRIVATE-TOKEN: $IMPERSONATION_TOKEN" "$GITLAB_API_URL/projects/$PROJECT_DEPLOY_ID/triggers" | jq --arg gitlab_user_id "$GITLAB_USER_ID" '.[] | select(.description == "trigger_deploy" and .owner.id == $gitlab_user_id)' | jq .token | tr -d '"'`
+    
     if [[ -z $PIPELINE_TOKEN ]]; then
-        printinfo "Création du déclencheur manquant trigger_deploy"
-        PIPELINE_TOKEN=`curl --silent --noproxy '*' --request POST --header "PRIVATE-TOKEN: $GITLAB_TOKEN" --form description="trigger_deploy" "$GITLAB_API_URL/projects/$PROJECT_DEPLOY_ID/triggers" | jq .token | tr -d '"'`
+        printinfo "Création du déclencheur manquant trigger_deploy pour le user courant"
+        PIPELINE_TOKEN=`curl --silent --noproxy '*' --request POST --header "PRIVATE-TOKEN: $IMPERSONATION_TOKEN" --form description="trigger_deploy" "$GITLAB_API_URL/projects/$PROJECT_DEPLOY_ID/triggers" | jq .token | tr -d '"'`
     fi
 
     printstep "Déclenchement du déploiement sur le projet $PROJECT_NAMESPACE/$PROJECT_DEPLOY_NAME"
-    PIPELINE_ID=`curl --silent --noproxy '*' --header "PRIVATE-TOKEN: $GITLAB_TOKEN" --header "SUDO: $GITLAB_USER_ID" -XPOST "$GITLAB_API_URL/projects/$PROJECT_DEPLOY_ID/trigger/pipeline" -d "token=$PIPELINE_TOKEN" -d "ref=$BRANCH_NAME" -d "variables[SERVICE_TO_UPDATE]=$PROJECT_NAME" | jq .id `
+    PIPELINE_ID=`curl --silent --noproxy '*' --header "PRIVATE-TOKEN: $IMPERSONATION_TOKEN" -XPOST "$GITLAB_API_URL/projects/$PROJECT_DEPLOY_ID/trigger/pipeline" -d "token=$PIPELINE_TOKEN" -d "ref=$BRANCH_NAME" -d "variables[SERVICE_TO_UPDATE]=$PROJECT_NAME" | jq .id `
     sleep 5
     
     DEPLOY_JOB_ID=`curl --silent --noproxy '*' --header "PRIVATE-TOKEN: $GITLAB_TOKEN" "$GITLAB_API_URL/projects/$PROJECT_DEPLOY_ID/pipelines/$PIPELINE_ID/jobs/" | jq '.[] | select(.name | startswith("deploy")) | .id'`
