@@ -38,7 +38,7 @@ if [[ $PROJECT_DEPLOY_ID != "" ]]; then
     fi
 
     printstep "Déclenchement du déploiement sur le projet $PROJECT_NAMESPACE/$PROJECT_DEPLOY_NAME"
-    PIPELINE_ID=`curl --silent --noproxy '*' --header "PRIVATE-TOKEN: $GITLAB_TOKEN" -XPOST "$GITLAB_API_URL/projects/$PROJECT_DEPLOY_ID/trigger/pipeline" -d "token=$PIPELINE_TOKEN" -d "ref=$BRANCH_NAME" -d "variables[SERVICE_TO_UPDATE]=$PROJECT_NAME" | jq .id `
+    PIPELINE_ID=`curl --silent --noproxy '*' --header "PRIVATE-TOKEN: $GITLAB_TOKEN" --header "SUDO: $GITLAB_USER_ID" -XPOST "$GITLAB_API_URL/projects/$PROJECT_DEPLOY_ID/trigger/pipeline" -d "token=$PIPELINE_TOKEN" -d "ref=$BRANCH_NAME" -d "variables[SERVICE_TO_UPDATE]=$PROJECT_NAME" | jq .id `
     sleep 5
     
     DEPLOY_JOB_ID=`curl --silent --noproxy '*' --header "PRIVATE-TOKEN: $GITLAB_TOKEN" "$GITLAB_API_URL/projects/$PROJECT_DEPLOY_ID/pipelines/$PIPELINE_ID/jobs/" | jq '.[] | select(.name | startswith("deploy")) | .id'`
