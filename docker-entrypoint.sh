@@ -37,7 +37,6 @@ if [[ $PROJECT_DEPLOY_ID != "" ]]; then
     fi    
     
     printstep "Préparation du déclencheur trigger_deploy sur le projet $PROJECT_NAMESPACE/$PROJECT_DEPLOY_NAME"
-    curl --silent --noproxy '*' --header "PRIVATE-TOKEN: $IMPERSONATION_TOKEN" "$GITLAB_API_URL/projects/$PROJECT_DEPLOY_ID/triggers" | jq
     PIPELINE_TOKEN=`curl --silent --noproxy '*' --header "PRIVATE-TOKEN: $IMPERSONATION_TOKEN" "$GITLAB_API_URL/projects/$PROJECT_DEPLOY_ID/triggers" | jq --arg gitlab_user_id "$GITLAB_USER_ID" '.[] | select(.description == "trigger_deploy" and .owner.id == $gitlab_user_id)' | jq .token | tr -d '"'`
     
     if [[ -z $PIPELINE_TOKEN ]]; then
