@@ -16,7 +16,7 @@ printinfo  "PROJECT_NAME        : $PROJECT_NAME"
 printinfo  "PROJECT_NAMESPACE   : $PROJECT_NAMESPACE"
 printinfo  "PROJECT_DEPLOY_NAME : $PROJECT_DEPLOY_NAME"
 
-PROJECT_DEPLOY_ID=`myCurl --header "PRIVATE-TOKEN: $GITLAB_TOKEN" "$GITLAB_API_URL/projects?search=$PROJECT_DEPLOY_NAME" | jq --arg project_namespace "$PROJECT_NAMESPACE" '.[] | select(.namespace.name == "\($project_namespace)")' | jq .id`
+PROJECT_DEPLOY_ID=`myCurl --header "PRIVATE-TOKEN: $GITLAB_TOKEN" "$GITLAB_API_URL/projects?search=$PROJECT_DEPLOY_NAME" | jq --arg project_namespace "$PROJECT_NAMESPACE" '.[] | select(.namespace.name == "\($project_namespace)") | .id'`
 
 if [[ $PROJECT_DEPLOY_ID != "" ]]; then
 
@@ -28,7 +28,7 @@ if [[ $PROJECT_DEPLOY_ID != "" ]]; then
     fi
     
     printstep "Préparation du déclencheur trigger_deploy sur le projet $PROJECT_NAMESPACE/$PROJECT_DEPLOY_NAME"
-    PIPELINE_TOKEN=`myCurl --header "PRIVATE-TOKEN: $GITLAB_TOKEN" "$GITLAB_API_URL/projects/$PROJECT_DEPLOY_ID/triggers" | jq '.[] | select(.description == "trigger_deploy")' | jq -r .token`
+    PIPELINE_TOKEN=`myCurl --header "PRIVATE-TOKEN: $GITLAB_TOKEN" "$GITLAB_API_URL/projects/$PROJECT_DEPLOY_ID/triggers" | jq -r '.[] | select(.description == "trigger_deploy") | .token'`
 
     if [[ -z $PIPELINE_TOKEN ]]; then
         printinfo "Création du déclencheur manquant trigger_deploy"
@@ -36,7 +36,7 @@ if [[ $PROJECT_DEPLOY_ID != "" ]]; then
     fi
 
     printstep "Déclenchement du déploiement sur le projet $PROJECT_NAMESPACE/$PROJECT_DEPLOY_NAME"
-    PIPELINE_ID=`myCurl --header "PRIVATE-TOKEN: $GITLAB_TOKEN" -XPOST "$GITLAB_API_URL/projects/$PROJECT_DEPLOY_ID/trigger/pipeline" -d "token=$PIPELINE_TOKEN" -d "ref=$BRANCH_NAME" -d "variables[SERVICE_TO_UPDATE]=$PROJECT_NAME" -d "variables[TRIGGER_USER_ID]=$GITLAB_USER_ID" | jq .id `
+    PIPELINE_ID=`myCurl --header "PRIVATE-TOKEN: $GITLAB_TOKEN" -XPOST "$GITLAB_API_URL/projects/$PROJECT_DEPLOY_ID/trigger/pipeline" -d "token=$PIPELINE_TOKEN" -d "ref=$BRANCH_NAME" -d "variables[SERVICE_TO_UPDATE]=$PROJECT_NAME" -d "variables[TRIGGER_USER_ID]=$GITLAB_USER_ID" | jq .id`
     sleep 5
     
     DEPLOY_JOB_ID=`myCurl --header "PRIVATE-TOKEN: $GITLAB_TOKEN" "$GITLAB_API_URL/projects/$PROJECT_DEPLOY_ID/pipelines/$PIPELINE_ID/jobs/" | jq '.[] | select(.name | startswith("deploy")) | .id'`
