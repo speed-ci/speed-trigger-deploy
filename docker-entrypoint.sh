@@ -22,7 +22,6 @@ PROJECT_DEPLOY_ID=`myCurl --header "PRIVATE-TOKEN: $GITLAB_TOKEN" "$GITLAB_API_U
 if [[ $PROJECT_DEPLOY_ID != "" ]]; then
 
     printstep "Préparation du projet $PROJECT_NAMESPACE/$PROJECT_DEPLOY_NAME"
-    GITLAB_CI_USER_ID=`myCurl --header "PRIVATE-TOKEN: $GITLAB_TOKEN" "$GITLAB_API_URL/users?username=$GITLAB_CI_USER" | jq .[0].id`
     GITLAB_CI_USER_MEMBERSHIP=`myCurl --header "PRIVATE-TOKEN: $GITLAB_TOKEN" "$GITLAB_API_URL/projects/$PROJECT_DEPLOY_ID/members?query=$GITLAB_CI_USER" | jq .[0]`
     if [[ $GITLAB_CI_USER_MEMBERSHIP == "null" ]]; then 
         printinfo "Ajout du user $GITLAB_CI_USER manquant au projet $PROJECT_NAMESPACE/$PROJECT_DEPLOY_NAME"
