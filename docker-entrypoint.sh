@@ -28,11 +28,11 @@ if [[ $PROJECT_DEPLOY_ID != "" ]]; then
     fi
     
     printstep "Préparation du déclencheur trigger_deploy sur le projet $PROJECT_NAMESPACE/$PROJECT_DEPLOY_NAME"
-    PIPELINE_TOKEN=`curl --silent --noproxy '*' --header "PRIVATE-TOKEN: $GITLAB_TOKEN" "$GITLAB_API_URL/projects/$PROJECT_DEPLOY_ID/triggers" | jq '.[] | select(.description == "trigger_deploy")' | jq .token | tr -d '"'`
+    PIPELINE_TOKEN=`curl --silent --noproxy '*' --header "PRIVATE-TOKEN: $GITLAB_TOKEN" "$GITLAB_API_URL/projects/$PROJECT_DEPLOY_ID/triggers" | jq '.[] | select(.description == "trigger_deploy")' | jq -r .token`
 
     if [[ -z $PIPELINE_TOKEN ]]; then
         printinfo "Création du déclencheur manquant trigger_deploy"
-        PIPELINE_TOKEN=`curl --silent --noproxy '*' --request POST --header "PRIVATE-TOKEN: $GITLAB_TOKEN" --form description="trigger_deploy" "$GITLAB_API_URL/projects/$PROJECT_DEPLOY_ID/triggers" | jq .token | tr -d '"'`
+        PIPELINE_TOKEN=`curl --silent --noproxy '*' --request POST --header "PRIVATE-TOKEN: $GITLAB_TOKEN" --form description="trigger_deploy" "$GITLAB_API_URL/projects/$PROJECT_DEPLOY_ID/triggers" | jq -r .token`
     fi
 
     printstep "Déclenchement du déploiement sur le projet $PROJECT_NAMESPACE/$PROJECT_DEPLOY_NAME"
@@ -45,7 +45,7 @@ if [[ $PROJECT_DEPLOY_ID != "" ]]; then
         
         while :
         do
-            JOB_STATUS=`curl --silent --noproxy '*' --header "PRIVATE-TOKEN: $GITLAB_TOKEN" "$GITLAB_API_URL/projects/$PROJECT_DEPLOY_ID/jobs/$DEPLOY_JOB_ID" | jq .status | tr -d '"'`
+            JOB_STATUS=`curl --silent --noproxy '*' --header "PRIVATE-TOKEN: $GITLAB_TOKEN" "$GITLAB_API_URL/projects/$PROJECT_DEPLOY_ID/jobs/$DEPLOY_JOB_ID" | jq -r .status`
             if [[ $JOB_STATUS != "pending" ]] && [[ $JOB_STATUS != "running" ]]; then break; fi
             sleep 5
         done
