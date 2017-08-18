@@ -28,11 +28,11 @@ if [[ $PROJECT_DEPLOY_ID != "" ]]; then
     fi
     
     printstep "Préparation du déclencheur trigger_deploy sur le projet $PROJECT_NAMESPACE/$PROJECT_DEPLOY_NAME"
-    PIPELINE_TOKEN=`myCurl --header "PRIVATE-TOKEN: $GITLAB_TOKEN" "$GITLAB_API_URL/projects/$PROJECT_DEPLOY_ID/triggers" | jq -r '.[] | select(.description == "trigger_deploy") | .token'`
+    PIPELINE_TOKEN=`myCurl --header "PRIVATE-TOKEN: $GITLAB_TOKEN" "$GITLAB_API_URL/projects/$PROJECT_DEPLOY_ID/triggers" | jq -r --arg gitlab_user_id "$GITLAB_USER_ID" '.[] | select(.description == "trigger_deploy" and .owner.id == "\($gitlab_user_id)") | .token'`
 
     if [[ -z $PIPELINE_TOKEN ]]; then
         printinfo "Création du déclencheur manquant trigger_deploy"
-        PIPELINE_TOKEN=`myCurl --request POST --header "PRIVATE-TOKEN: $GITLAB_TOKEN" --form description="trigger_deploy" "$GITLAB_API_URL/projects/$PROJECT_DEPLOY_ID/triggers" | jq -r .token`
+        PIPELINE_TOKEN=`myCurl --request POST --header "PRIVATE-TOKEN: $GITLAB_TOKEN" --header "SUDO: $GITLAB_USER_ID" --form description="trigger_deploy" "$GITLAB_API_URL/projects/$PROJECT_DEPLOY_ID/triggers" | jq -r .token`
     fi
 
     printstep "Déclenchement du déploiement sur le projet $PROJECT_NAMESPACE/$PROJECT_DEPLOY_NAME"
