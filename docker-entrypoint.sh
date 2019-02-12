@@ -9,8 +9,7 @@ printstep "Vérification des paramètres d'entrée"
 init_env
 int_gitlab_api_env
 
-PROJECT_PREFIX=${PROJECT_NAME%-*}
-PROJECT_DEPLOY_NAME="$PROJECT_PREFIX-deploy"
+PROJECT_DEPLOY_NAME="$PROJECT_NAMESPACE-deploy"
 
 printinfo  "PROJECT_NAME        : $PROJECT_NAME"
 printinfo  "PROJECT_NAMESPACE   : $PROJECT_NAMESPACE"
